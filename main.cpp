@@ -46,15 +46,15 @@ class Board
             bool safeCol = col < 3 && row >=0;
             bool safeIndex = safeRow && safeCol;
             
-            if(board[row][col] == " " && safeIndex) //checking for a blank place within the board.
-            { 
-                board[row][col] = player;
-                return true;
-            }
-            else 
+            if(safeIndex) 
             {
-                return false;
+                if(board[row][col] == " ") //checking for a blank place within the board.
+                {
+                    board[row][col] = player;
+                    return true;
+                }
             }
+            return false;
         }
 
 

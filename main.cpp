@@ -6,7 +6,10 @@ C++ so far.
 
 Author: CKilburn12 (Colin Kilburn)
 **/
+
+#include <bits/stdc++.h> 
 #include <iostream>
+#include <algorithm>
 #include <vector>
 #include <string>
 #include <map>
@@ -31,9 +34,8 @@ class Board
         **/
         vector<vector<string>> getArray()
         {
-            return board;
+            return this->board;
         }
-
 
         /**
         Ensures a valid move by the player, if it is,
@@ -48,24 +50,22 @@ class Board
             
             if(safeIndex) 
             {
-                if(board[row][col] == " ") //checking for a blank place within the board.
+                if(this->board[row][col] == " ") //checking for a blank place within the board.
                 {
-                    board[row][col] = player;
+                    this->board[row][col] = player;
                     return true;
                 }
             }
             return false;
         }
 
-
         /**
         Calls the functions to check if someone has won on rows, columns, or diagonal.
         **/
         bool checkWinStatus()
         {
-            return (checkRow() || checkCol() || checkDiag());
+            return (this->checkRow() || this->checkCol() || this->checkDiag());
         }
-
 
         /**
         Checks if either player has won on any of the three rows.
@@ -74,16 +74,15 @@ class Board
         {
             for(int col = 0; col<3; col++)
             {
-                bool twoEqual = !board[col][0].compare(board[col][1]);
-                bool threeEqual = !board[col][1].compare(board[col][2]);
-                bool notBlank = board[col][0].compare(" ");
+                bool twoEqual = !this->board[col][0].compare(this->board[col][1]);
+                bool threeEqual = !this->board[col][1].compare(this->board[col][2]);
+                bool notBlank = this->board[col][0].compare(" ");
 
                 if(twoEqual && threeEqual && notBlank)
                     return true;
             }
             return false;
         }
-
 
         /**
         Checks if either player has won on any of the three columns.
@@ -92,16 +91,15 @@ class Board
         {
             for(int row = 0; row<3; row++)
             {
-                bool twoEqual = !board[0][row].compare(board[1][row]);
-                bool threeEqual = !board[1][row].compare(board[2][row]);
-                bool notBlank = board[0][row].compare(" ");
+                bool twoEqual = !this->board[0][row].compare(this->board[1][row]);
+                bool threeEqual = !this->board[1][row].compare(this->board[2][row]);
+                bool notBlank = this->board[0][row].compare(" ");
                 
                 if(twoEqual && threeEqual && notBlank)
                     return true;
             }
             return false;
         }
-
 
         /**
         Checks if either player has won on either diagonal.
@@ -114,22 +112,73 @@ class Board
             bool threeEqual{false};
             
             
-            bool notBlank = board[1][1].compare(" ");
+            bool notBlank = this->board[1][1].compare(" ");
 
-            twoEqual = !board[0][0].compare(board[1][1]);
-            threeEqual = !board[2][2].compare(board[1][1]);
+            twoEqual = !this->board[0][0].compare(this->board[1][1]);
+            threeEqual = !this->board[2][2].compare(this->board[1][1]);
 
             leftToRight = twoEqual && threeEqual;
             
-            twoEqual = !board[0][2].compare(board[1][1]);
-            threeEqual = !board[2][0].compare(board[1][1]);
+            twoEqual = !this->board[0][2].compare(this->board[1][1]);
+            threeEqual = !this->board[2][0].compare(this->board[1][1]);
 
             rightToLeft = twoEqual && threeEqual;
             
             return ((rightToLeft || leftToRight) && notBlank);
         }
-};
 
+        bool checkUnwinnable()
+        {
+            bool XPresent{false};
+            bool OPresent{false};
+    
+            vector<bool> validRows(8);
+
+            vector<vector<string>> sidewaysBoard = {{" ", " ", " "}, 
+                                                    {" ", " ", " "}, 
+                                                    {" ", " ", " "}};
+
+            vector<vector<string>> diagonals = {{" ", " ", " "}, {" ", " ", " "}};  
+            
+            for(int row = 0; row < 3; row++)
+            {
+                for(int col = 0; col < 3; col++)
+                {
+                    sidewaysBoard[row][col] = this->board[col][row];
+                }
+            }
+
+            for(int i = 0; i < 3; i++)
+            {
+                XPresent = (find(this->board[i].begin(), this->board[i].end(), "X") != this->board[i].end());
+                OPresent = (find(this->board[i].begin(), this->board[i].end(), "O") != this->board[i].end());
+
+                validRows[i] = XPresent && OPresent;
+
+                XPresent = (find(sidewaysBoard[i].begin(), sidewaysBoard[i].end(), "X") != sidewaysBoard[i].end());
+                OPresent = (find(sidewaysBoard[i].begin(), sidewaysBoard[i].end(), "O") != sidewaysBoard[i].end());
+                
+                
+                validRows[i+3] = XPresent && OPresent;
+
+                diagonals[0][i] = this->board[i][i];
+                diagonals[1][i] = sidewaysBoard[i][i];
+            }
+
+            
+            XPresent = (find(diagonals[0].begin(), diagonals[0].end(), "X") != diagonals[0].end());
+            OPresent = (find(diagonals[0].begin(), diagonals[0].end(), "O") != diagonals[0].end());
+            
+            validRows[6] = XPresent && OPresent;
+            
+            XPresent = (find(diagonals[1].begin(), diagonals[1].end(), "X") != diagonals[1].end());
+            OPresent = (find(diagonals[1].begin(), diagonals[1].end(), "O") != diagonals[1].end());
+
+            validRows[7] = XPresent && OPresent;
+
+            return accumulate(validRows.begin(), validRows.end(), 0 ) >= 7;
+        }
+};
 
 /**
 Overloading the << operator for a board object to display
@@ -150,7 +199,6 @@ ostream& operator<<(ostream& os, Board& b)
     }
     return os;
 }
-
 
 /**
 This function takes input of rows and cols and puts it into a map.
@@ -173,7 +221,6 @@ map<string, int> userInput()
 
     return position;
 }
-
 
 /**
 This goes through everything that needs to happen on each turn,
@@ -202,7 +249,6 @@ void playerTurn(string player, Board& b)
 
 }
 
-
 /**
 Main function,
 just shows the blank board then starts calling the turn function.
@@ -221,7 +267,14 @@ int main()
         if(newBoard.checkWinStatus()) 
         {
             system("clear");
-            cout << "Player 1 Wins!";
+            cout << "Player 1 Wins!\n";
+            break;
+        }
+
+        if(newBoard.checkUnwinnable())
+        {
+            system("clear");
+            cout << "Tie!\n";
             break;
         }
         
@@ -229,9 +282,18 @@ int main()
         if(newBoard.checkWinStatus()) 
         {
             system("clear");
-            cout << "Player 2 Wins!";
+            cout << "Player 2 Wins!\n";
             break;
         }
-    }         
+
+        if(newBoard.checkUnwinnable())
+        {
+            system("clear");
+            cout << "Tie!\n";
+            break;
+        }
+    } 
+
+    cout << newBoard;        
     return 0;
 }

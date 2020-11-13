@@ -180,6 +180,7 @@ class Board
         }
 };
 
+
 /**
 Overloading the << operator for a board object to display
 the values divided by | characters.
@@ -199,6 +200,69 @@ ostream& operator<<(ostream& os, Board& b)
     }
     return os;
 }
+
+
+class Oponent
+{
+    protected:
+
+        Board aiBoard;
+   
+    public:
+
+        Board getBoard()
+        {
+            return aiBoard;
+        }
+        
+        void setBoard(Board& b)
+        {
+            aiBoard = b;
+        }
+
+        vector<string> flattenVector()
+        {
+            vector<string> flatVector;
+            vector<vector<string>> tempVector = this->aiBoard.getArray();
+            
+            for(int i = 0; i < 3; i++)
+            {
+                for(int j = 0; j < 3; j++)
+                {
+                    string temp = tempVector[i][j];
+                    flatVector.push_back(temp); 
+                }
+            }
+            return flatVector;
+        }
+
+};
+
+
+
+
+class easyOponent: public Oponent
+{
+    public:
+        void move()
+        {
+            int xPos{};
+            int yPos{};
+            
+            bool validMove{false};
+            
+            do
+            {
+                xPos = rand()%3;
+                yPos = rand()%3;
+                validMove = this->aiBoard.setArray(xPos, yPos, "O");
+            } while(!validMove);
+
+            system("clear");
+            cout << this->aiBoard;
+        }
+};
+
 
 /**
 This function takes input of rows and cols and puts it into a map.
@@ -232,11 +296,11 @@ void playerTurn(string player, Board& b)
     string playerName{};
     bool validMove{};
     
+    if(player == "X") playerName = "Player 1";
+    else playerName = "Player 2";
+    
     do
     {
-        if(player == "X") playerName = "Player 1";
-        else playerName = "Player 2";
-
         cout << playerName << "\n";
         position = userInput();
         validMove = b.setArray(position["Row"], position["Col"], player);
@@ -249,18 +313,9 @@ void playerTurn(string player, Board& b)
 
 }
 
-/**
-Main function,
-just shows the blank board then starts calling the turn function.
-Stops running once someone wins.
-**/
-int main()
-{
-    Board newBoard;
 
-    system("clear");
-    cout << newBoard;
-    
+void twoPlayer(Board &newBoard)
+{
     while(true)
     {
         playerTurn("X", newBoard);
@@ -292,8 +347,81 @@ int main()
             cout << "Tie!\n";
             break;
         }
-    } 
+    }
 
+}
+
+void playEasyAI(Board &newBoard)
+{
+    easyOponent AI;
+    while(true)
+    {
+        playerTurn("X", newBoard);
+        if(newBoard.checkWinStatus()) 
+        {
+            system("clear");
+            cout << "Player 1 Wins!\n";
+            break;
+        }
+
+        if(newBoard.checkUnwinnable())
+        {
+            system("clear");
+            cout << "Tie!\n";
+            break;
+        }
+
+        AI.setBoard(newBoard);
+        AI.move();
+        newBoard = AI.getBoard();
+
+        if(newBoard.checkWinStatus()) 
+        {
+            system("clear");
+            cout << "Player 2 Wins!\n";
+            break;
+        }
+
+        if(newBoard.checkUnwinnable())
+        {
+            system("clear");
+            cout << "Tie!\n";
+            break;
+        }
+    }
+
+}
+
+/**
+Main function,
+just shows the blank board then starts calling the turn function.
+Stops running once someone wins.
+**/
+int main()
+{
+    Board newBoard;
+
+    system("clear");
+
+    int mode{};
+
+    cout << "What mode do you want to play:" << endl;
+    cout << "(1) Two Player\n (2) Easy AI" << endl;
+    cin >> mode;    
+
+
+
+    cout << newBoard;
+    
+    switch(mode)
+    {
+        case 1:
+            twoPlayer(newBoard);
+            break;
+        case 2: 
+            playEasyAI(newBoard);
+            break;
+    }
     cout << newBoard;        
     return 0;
 }
